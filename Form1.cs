@@ -35,9 +35,11 @@ namespace ToDo
 
                     if (confirm == DialogResult.Yes)
                     {
-                        var firstTask = chooseList.Items[0];
-                        listBoxTasks.DataSource = null;
-                        listBoxTasks.DataSource = new List<ToDoItem> { firstTask };
+                        if (listBoxTasks.SelectedItem is ToDoItem task)
+                        {
+                            listBoxTasks.DataSource = null;
+                            listBoxTasks.DataSource = new List<ToDoItem> { task };
+                        }
                     }
                     else
                         updateListBox(chooseList);
