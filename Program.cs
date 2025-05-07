@@ -10,7 +10,12 @@ namespace ToDo
         {
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
+            SQLitePCL.Batteries.Init();
+            DataBase.Initialize();
             ApplicationConfiguration.Initialize();
+
+            
+
             Application.Run(new Form1());
         }
     }

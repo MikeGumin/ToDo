@@ -5,8 +5,12 @@ namespace ToDo
         List<ToDoList> list = new List<ToDoList>();
         public Form1()
         {
+            SQLitePCL.Batteries.Init();
             InitializeComponent();
+            updateComboBox();
+            if (comboLst.SelectedItem is ToDoList chooseList) updateListBox(chooseList);
         }
+
         //добавление списка дел в combo box
         private void btnAdd_Click(object sender, EventArgs e)
         {
@@ -14,13 +18,13 @@ namespace ToDo
 
             if (!string.IsNullOrEmpty(namelist))
             {
-                list.Add(new ToDoList { Name = namelist });
+                DataBase.AddList(namelist);
                 updateComboBox();
             }
             else
                 MessageBox.Show("Введите название списка");
         }
-
+        // Дает выбор увидеть первую задачу из списка или все задачи из списка дел
         private void btnShowTasks_Click(object sender, EventArgs e)
         {
             if (comboLst.SelectedItem is ToDoList chooseList)
@@ -44,19 +48,21 @@ namespace ToDo
             else
                 MessageBox.Show("Создайте список дел");
         }
+        //Удаляет список дел из ComboBox
         private void btnDeleteList_Click(object sender, EventArgs e)
         {
             if (comboLst.SelectedItem is ToDoList chooseList)
             {
                 var confirm = MessageBox.Show($"Удалить список '{chooseList}'?", "Подтвердить", MessageBoxButtons.YesNo);
+
                 if (confirm == DialogResult.Yes)
                 {
-                    list.Remove(chooseList);
+                    DataBase.DeleteList(chooseList.Id);
                     updateComboBox();
-                    listBoxTasks.DataSource = null;
                 }
             }
         }
+        //редактирует название списка дел
         private void btnEditLlist_Click(object sender, EventArgs e)
         {
             if (comboLst.SelectedItem is ToDoList chooseList)
@@ -65,25 +71,28 @@ namespace ToDo
 
                 if (!string.IsNullOrEmpty(newName))
                 {
-                    chooseList.Name = newName;
+                    DataBase.UpdateListName(chooseList.Id, newName);
                     updateComboBox();
                 }
             }
         }
+        //Добавляет новую задачу в перечень задач выбранного списка дел
         private void btnAddTask_Click(object sender, EventArgs e)
         {
             var chooseList = comboLst.SelectedItem as ToDoList;
 
             if (chooseList != null)
             {
-                string task = Microsoft.VisualBasic.Interaction.InputBox("Указать название задачи", "Добавить новую задачу");
-                if (!string.IsNullOrEmpty(task))
+                string taskName = Microsoft.VisualBasic.Interaction.InputBox("Указать название задачи", "Добавить новую задачу");
+
+                if (!string.IsNullOrEmpty(taskName))
                 {
-                    chooseList.Items.Add(new ToDoItem { Title = task });
+                    DataBase.AddTask(chooseList.Id, taskName);
                     updateListBox(chooseList);
                 }
             }
         }
+        //Редактирует именование выбранной задачи
         private void btnEditTask_Click(object sender, EventArgs e)
         {
             if (comboLst.SelectedItem is ToDoList list && listBoxTasks.SelectedItem is ToDoItem Task)
@@ -92,11 +101,12 @@ namespace ToDo
 
                 if (!string.IsNullOrEmpty(newTask))
                 {
-                    Task.Title = newTask;
+                    DataBase.UpdateTaskName(Task.Id, newTask, Task.IsCompleted);
                     updateListBox(list);
                 }
             }
         }
+        //Удаляет выбранную задачу из перечня
         private void btnDeleteTask_Click(object sender, EventArgs e)
         {
             if (comboLst.SelectedItem is ToDoList list && listBoxTasks.SelectedItem is ToDoItem task)
@@ -105,27 +115,31 @@ namespace ToDo
 
                 if (confirm == DialogResult.Yes)
                 {
-                    list.Items.Remove(task);
+                    DataBase.DeleteTasks(task.Id);
                     updateListBox(list);
                 }
             }
         }
+        //Меняет маркер выполнения задачи на противоположный
         private void btnMarkCompleted_Click(object sender, EventArgs e)
         {
             if (comboLst.SelectedItem is ToDoList list && listBoxTasks.SelectedItem is ToDoItem task)
             {
-                task.IsCompleted = true;
+                DataBase.UpdateTaskName(task.Id, task.Title, !task.IsCompleted);
                 updateListBox(list);
             }
         }
+        //Обновляет список задач в listBox
         private void updateListBox(ToDoList list)
         {
             listBoxTasks.DataSource = null;
-            listBoxTasks.DataSource = list.Items;
+            listBoxTasks.DataSource = DataBase.GetTaskForList(list.Id);
         }
+        //Обновляем списко дел в ComboBox
         private void updateComboBox()
         {
             comboLst.DataSource = null;
+            list = DataBase.GetAllLists();
             comboLst.DataSource = list;
             comboLst.DisplayMember = "Name";
         }
