@@ -3,8 +3,6 @@ namespace ToDo
     public partial class Form1 : Form
     {
         List<ToDoList> list = new List<ToDoList>();
-
-        
         public Form1()
         {
             SQLitePCL.Batteries.Init();
@@ -14,16 +12,6 @@ namespace ToDo
 
             comboLst.SelectedIndexChanged += ComboBoxProjects_SelectedIndexChanged;
         }
-
-        //Авто-заполнение ListBox после смены списка дел в ComboBox
-        private void ComboBoxProjects_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            if (comboLst.SelectedItem is ToDoList chooseList)
-            {
-                updateListBox(chooseList);
-            }
-        }
-
         //добавление списка дел в combo box
         private void btnAdd_Click(object sender, EventArgs e)
         {
@@ -142,6 +130,14 @@ namespace ToDo
             {
                 DataBase.UpdateTaskName(task.Id, task.Title, !task.IsCompleted);
                 updateListBox(list);
+            }
+        }
+        //Авто-заполнение ListBox после смены списка дел в ComboBox
+        private void ComboBoxProjects_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (comboLst.SelectedItem is ToDoList chooseList)
+            {
+                updateListBox(chooseList);
             }
         }
         //Обновляет список задач в listBox
